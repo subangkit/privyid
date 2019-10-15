@@ -1,3 +1,1 @@
 # Laravel Privy ID Integration
-
-
