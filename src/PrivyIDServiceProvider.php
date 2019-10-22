@@ -10,8 +10,8 @@ namespace BlackIT\PrivyID;
 
 
 use Illuminate\Support\ServiceProvider;
-use Yamisok\Unipin\Commands\PrivyIDCheckDocument;
-use Yamisok\Unipin\Commands\PrivyIDCheckRegistration;
+use BlackIT\PrivyID\Commands\PrivyIDCheckDocument;
+use BlackIT\PrivyID\Commands\PrivyIDCheckRegistration;
 
 class PrivyIDServiceProvider extends ServiceProvider
 {
