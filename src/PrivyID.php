@@ -139,7 +139,7 @@ class PrivyID
 
     public function getOAuthLink() {
         $url = 'login';
-        $endpoint = $this->baseUrl() . '/'. $url ;
+        $endpoint = $this->baseUrlV1() . '/'. $url ;
         $data = [
             'client_id' => $this->getClientID(),
             'redirect_url' => url('callback/privyid'),
