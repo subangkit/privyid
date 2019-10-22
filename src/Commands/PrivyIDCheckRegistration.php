@@ -1,6 +1,6 @@
 <?php
 
-namespace Yamisok\Unipin\Commands;
+namespace BlackIT\PrivyID\Commands;
 
 use Illuminate\Console\Command;
 use BlackIT\PrivyID\PrivyIDFacade as PrivyID;
