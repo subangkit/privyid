@@ -19,6 +19,9 @@ class PrivyID
     CONST SANDBOX_API_BASE_URL = 'https://api-sandbox.privy.id/v3/merchant';
     CONST PRODUCTION_API_BASE_URL = 'https://core.privy.id/v3/merchant';
 
+    CONST SANDBOX_API_BASE_URL_V1 = 'http://oauth.privydev.id';
+    CONST PRODUCTION_API_BASE_URL_V1 = 'http://oauth.privy.id';
+
     public function __construct()
     {
     }
@@ -28,8 +31,21 @@ class PrivyID
         return (config('privyid.is_production')) ? self::PRODUCTION_API_BASE_URL : self::SANDBOX_API_BASE_URL;
     }
 
+    private function baseUrlV1()
+    {
+        return (config('privyid.is_production')) ? self::PRODUCTION_API_BASE_URL_V1 : self::SANDBOX_API_BASE_URL_V1;
+    }
+
 
     private function requestHeader()
+    {
+        return [
+            'Merchant-Key' => $this->getMerchantKey(),
+            'Content-Type' => 'multipart/form-data'
+        ];
+    }
+
+    private function requestHeaderV1()
     {
         return [
             'Merchant-Key' => $this->getMerchantKey(),
@@ -64,6 +80,34 @@ class PrivyID
         }
     }
 
+    private function clientRequestV1($url, $type, $data = null)
+    {
+        try {
+            $client = new Client($this->requestHeaderV1());
+
+            $options = [];
+            switch(strtolower($type)) {
+                case 'post' :
+                    $options = [
+                        'multipart' => $this->dataToMultipart($data)
+                    ];
+                    break;
+                case 'get' :
+                    $options = [
+                        'data' => $data
+                    ];
+                    break;
+            }
+
+            $request = $client->request($type, $url, $options);
+
+            $response = json_decode($request->getBody()->getContents(),true);
+            return $response;
+        } catch (Exception $e) {
+            throw new Exception ($e->getMessage(), $e->getResponse()->getStatusCode());
+        }
+    }
+
     private function getMerchantKey() {
         return (config('privyid.is_production')) ? config('privyid.production.merchant_key') : config('privyid.sandbox.merchant_key');
     }
@@ -76,6 +120,14 @@ class PrivyID
         return (config('privyid.is_production')) ? config('privyid.production.password') : config('privyid.sandbox.password');
     }
 
+    private function getClientID() {
+        return config('privyid.client_id');
+    }
+
+    private function getSecretKey() {
+        return config('privyid.secret_key');
+    }
+
     public function getResponseStatus($response) {
         if (isset($response['status'])) {
             if ($response['status'] == 1)
@@ -83,6 +135,25 @@ class PrivyID
         }
 
         return false;
+    }
+
+    public function getOAuthLink() {
+        $url = 'login';
+        $endpoint = $this->baseUrl() . '/'. $url ;
+        $data = [
+            'client_id' => $this->getClientID(),
+            'redirect_url' => url('callback/privyid'),
+            'scope' => 'read',
+            'response_type' => 'code'
+        ];
+
+        $query_string = '';
+        foreach ($data as $name => $value) {
+            $query_string .= $name.'='.urlencode($value).'&';
+        }
+        $query_string = substr($query_string,0,strlen($query_string)-1);
+
+        return $endpoint.'?'.$query_string;
     }
 
     /**

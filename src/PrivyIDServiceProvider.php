@@ -51,13 +51,13 @@ class PrivyIDServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind('yamisok-unipin', function() {
-            return new Unipin;
+        $this->app->bind('blackit-privyid', function() {
+            return new PrivyID;
         });
     }
 
     public function provides()
     {
-        return [Unipin::class];
+        return [PrivyID::class];
     }
 }
