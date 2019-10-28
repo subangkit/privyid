@@ -138,7 +138,7 @@ class PrivyID
     }
 
     public function getOAuthLink() {
-        $url = 'login';
+        $url = 'oauth/authorize';
         $endpoint = $this->baseUrlV1() . '/'. $url ;
         $data = [
             'client_id' => $this->getClientID(),
