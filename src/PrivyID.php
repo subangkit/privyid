@@ -53,6 +53,15 @@ class PrivyID
         ];
     }
 
+    private function requestHeaderV1OAuth(string $token)
+    {
+        return [
+            'Authorization' => 'Bearer '.$token,
+            'Accept' => '*/*',
+            'Cache-Control' => 'no-cache'
+        ];
+    }
+
     private function dataToMultipart($data) {
         $return = [];
         foreach ($data as $index => $content) {
@@ -108,6 +117,32 @@ class PrivyID
         }
     }
 
+    private function clientRequestV1OAuth($url, $type, $data = null, string $token)
+    {
+        try {
+            $client = new Client();
+
+            $options = [
+                'headers' => $this->requestHeaderV1OAuth($token)
+            ];
+            switch(strtolower($type)) {
+                case 'post' :
+                    $options['multipart'] = $this->dataToMultipart($data);
+                    break;
+                case 'get' :
+                    $options['data'] = $data;
+                    break;
+            }
+
+            $request = $client->request($type, $url, $options);
+
+            $response = json_decode($request->getBody()->getContents(),true);
+            return $response;
+        } catch (Exception $e) {
+            throw new Exception ($e->getMessage(), $e->getResponse()->getStatusCode());
+        }
+    }
+
     private function getMerchantKey() {
         return (config('privyid.is_production')) ? config('privyid.production.merchant_key') : config('privyid.sandbox.merchant_key');
     }
@@ -142,7 +177,7 @@ class PrivyID
         $endpoint = $this->baseUrlV1() . '/'. $url ;
         $data = [
             'client_id' => $this->getClientID(),
-            'redirect_url' => url('callback/privyid'),
+            'redirect_uri' => 'https://kolegakapital.com/callback/privyid', //url('callback/privyid')
             'scope' => 'read',
             'response_type' => 'code'
         ];
@@ -155,6 +190,48 @@ class PrivyID
 
         return $endpoint.'?'.$query_string;
     }
+
+    public function getOAuthToken(string $code) {
+        $url = 'oauth/token';
+        $endpoint = $this->baseUrlV1() . '/'. $url ;
+        $data = [
+            'client_id' => $this->getClientID(),
+            'client_secret' => $this->getSecretKey(),
+            'grant_type' => 'authorization_code',
+            'code' => $code,
+            'redirect_uri' => 'https://kolegakapital.com/callback/privyid' //url('callback/privyid')
+        ];
+        $response = $this->clientRequestV1($endpoint, 'POST', $data);
+
+        return $response;
+    }
+
+    public function refreshToken(string $refresh_token) {
+        $url = 'oauth/token';
+        $endpoint = $this->baseUrlV1() . '/'. $url ;
+        $data = [
+            'client_id' => $this->getClientID(),
+            'client_secret' => $this->getSecretKey(),
+            'grant_type' => 'refresh_token',
+            'refresh_token' => $refresh_token
+        ];
+        $response = $this->clientRequestV1($endpoint, 'POST', $data);
+
+        return $response;
+    }
+
+    public function getUserIdentity(string $token) {
+        $endpoint = $this->baseUrlV1() . '/api/v1/user/identity';
+        $data = [
+
+        ];
+
+        $response = $this->clientRequestV1OAuth($endpoint, 'GET', $data, $token);
+
+        return $response;
+    }
+
+
 
     /**
      * @param $email    user@usermail.com	User's mail

@@ -12,7 +12,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class PrivyIDAccount extends Model
 {
-    protected $fillable = ['code'];
+    protected $fillable = ['code','token','user_token','token_expired','code_expired', 'refresh_token', 'identity_response_json'];
+    protected $table = 'privyids';
 
     public function privyable()
     {

@@ -16,6 +16,12 @@ class Privyable extends Migration
         Schema::create('privyids', function (Blueprint $table) {
             $table->increments('id');
             $table->string('code');
+            $table->text('token');
+            $table->text('refresh_token');
+            $table->text('user_token');
+            $table->text('identity_response_json');
+            $table->datetime('code_expired');
+            $table->datetime('token_expired');
 
             $table->unsignedInteger('privyable_id');
             $table->string('privyable_type');
