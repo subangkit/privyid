@@ -41,7 +41,7 @@ class PrivyID
     {
         return [
             'Merchant-Key' => $this->getMerchantKey(),
-            'Content-Type' => 'multipart/form-data',
+            //'Content-Type' => 'multipart/form-data',
             'Accept' => '*/*',
             'Connection' => 'keep-alive'
         ];
@@ -86,18 +86,11 @@ class PrivyID
     }
     private function clientRequest($url, $type, $data = null, $files = [])
     {
-
-        //$data['document']['content'] = 'DIKOSONGKAN';
-        var_dump($url, $type, $this->dataToMultipart($data),[
-            'headers' => $this->requestHeader(),
-            'auth' => [$this->getUsername(), $this->getPassword()]
-        ]);
-
         try {
             $options = [
                 'headers' => $this->requestHeader(),
                 'multipart' => $this->dataToMultipart($data),
-                'auth' => [$this->getUsername(), $this->getPassword()]
+                'auth' => [$this->getUsername(), $this->getPassword()],
             ];
 
             foreach($files as $filename => $content) {
@@ -107,7 +100,6 @@ class PrivyID
             //$client->setAuth($this->getUsername(), $this->getPassword());
 
             $request = $client->request($type, $url, $options);
-
 
             $response = json_decode($request->getBody()->getContents(),true);
             return $response;
@@ -354,11 +346,11 @@ class PrivyID
      * @return mixed
      * @throws Exception
      */
-    public function getDocumentStatus($token)
+    public function getDocumentStatus($docToken)
     {
-        $endpoint = $this->baseUrl() . '/document/status/'.$token;
+        $endpoint = $this->baseUrl() . '/document/status/'.$docToken;
         $data = [
-            'token' => $token
+            'token' => $docToken
         ];
 
         $response = $this->clientRequest($endpoint, 'GET', $data);

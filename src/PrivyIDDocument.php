@@ -22,6 +22,8 @@ class PrivyIDDocument extends Model
         'url',
         'privy_uploadable_id',
         'privy_uploadable_type',
+        'document_response_json',
+        'last_status_updated',
     ];
     protected $table = 'privyid_documents';
 }

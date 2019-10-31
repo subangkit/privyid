@@ -21,10 +21,11 @@ trait PrivyIDUploadable
         return $this->privyids()->orderBy('created_at','DESC')->first();
     }
 
-    public function uploadDocument($title, $type, $filepath, $recipients) {
+    public function uploadDocument($codification,$title, $type, $filepath, $recipients) {
         $document = new PrivyIDDocument();
         $document->title = $title;
         $document->type = $type;
+        $document->codification = $codification;
 
         $privyID = new PrivyID();
 
@@ -32,8 +33,41 @@ trait PrivyIDUploadable
         $document->document = $filepath;
         $document->recipients = json_encode($recipients);
         $uploadResponse = $privyID->uploadDocument($title, $type, $document->owner, $filepath,$document->recipients);
-        exit;
 
-        return $this->privyid_documents()->save($document);
+        if (is_array($uploadResponse)) {
+            if (isset($uploadResponse['data'])) {
+                $data = $uploadResponse['data'];
+                $document->token = $data['docToken'];
+                $document->url = $data['urlDocument'];
+                $document->document_response_json = json_encode($uploadResponse);
+
+                return $this->privyid_documents()->save($document);
+
+            }
+        }
+
+        return null;
+
+    }
+
+    public function statusDocument($docToken) {
+        $privyID = new PrivyID();
+        $statusResponse = $privyID->getDocumentStatus($docToken);
+        if (is_array($statusResponse)) {
+            $document = PrivyIDDocument::where('token',$docToken)->first();
+            if ($document) {
+                $document->last_status_updated = date('Y-m-d H:i:s');
+                $document->status_response_json = json_encode($statusResponse);
+                if (isset($statusResponse['data'])) {
+                    $data = $statusResponse['data'];
+                    $document->status_recipients = json_encode($data['recipients']);
+                }
+                $document->save();
+
+                return $document;
+            }
+        }
+
+        return false;
     }
 }
