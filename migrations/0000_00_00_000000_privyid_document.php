@@ -23,6 +23,12 @@ class PrivyidDocument extends Migration
             $table->text('token');
             $table->string('url',255);
 
+            $table->text('document_response_json');
+            $table->string('codification');
+            $table->text('status_response_json');
+            $table->text('status_recipients');
+            $table->dateTime('last_status_updated');
+
             $table->unsignedInteger('privy_uploadable_id');
             $table->string('privy_uploadable_type');
 
