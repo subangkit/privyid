@@ -41,6 +41,11 @@ class PrivyIDServiceProvider extends ServiceProvider
             => database_path('migrations/'.date('Y').'_'.str_pad(date('m'), 2, "0", STR_PAD_LEFT).'_'.str_pad(date('d'), 2, "0", STR_PAD_LEFT).'_000000_privyable.php'),
         ], 'migrations');
 
+        $this->publishes([
+            __DIR__.'/../migrations/0000_00_00_000000_privyid_document.php'
+            => database_path('migrations/'.date('Y').'_'.str_pad(date('m'), 2, "0", STR_PAD_LEFT).'_'.str_pad(date('d'), 2, "0", STR_PAD_LEFT).'_000000_privyid_document.php'),
+        ], 'migrations');
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 PrivyIDCheckRegistration::class,

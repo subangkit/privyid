@@ -41,7 +41,9 @@ class PrivyID
     {
         return [
             'Merchant-Key' => $this->getMerchantKey(),
-            'Content-Type' => 'multipart/form-data'
+            'Content-Type' => 'multipart/form-data',
+            'Accept' => '*/*',
+            'Connection' => 'keep-alive'
         ];
     }
 
@@ -65,27 +67,52 @@ class PrivyID
     private function dataToMultipart($data) {
         $return = [];
         foreach ($data as $index => $content) {
-            array_push($return,[
-                'name' => $index,
-                'contents' => $content
-            ]);
+            if (!is_array($content)) {
+                array_push($return, [
+                    'name' => $index,
+                    'contents' => $content
+                ]);
+            } else {
+                array_push($return, [
+                    'name' => $index,
+                    'filename' => $content['filename'],
+                    'contents' => $content['content'],
+                    //'headers'  => ['Content-Type' => $content['mime']]
+                ]);
+            }
         }
 
         return $return;
     }
-    private function clientRequest($url, $type, $data = null)
+    private function clientRequest($url, $type, $data = null, $files = [])
     {
+
+        //$data['document']['content'] = 'DIKOSONGKAN';
+        var_dump($url, $type, $this->dataToMultipart($data),[
+            'headers' => $this->requestHeader(),
+            'auth' => [$this->getUsername(), $this->getPassword()]
+        ]);
+
         try {
-            $client = new Client($this->requestHeader());
-            $client->setAuth($this->getUsername(), $this->getPassword());
-            $request = $client->request($type, $url, [
-                'multipart' => $this->dataToMultipart($data)
-            ]);
+            $options = [
+                'headers' => $this->requestHeader(),
+                'multipart' => $this->dataToMultipart($data),
+                'auth' => [$this->getUsername(), $this->getPassword()]
+            ];
+
+            foreach($files as $filename => $content) {
+                $options[$filename] = $content;
+            }
+            $client = new Client();
+            //$client->setAuth($this->getUsername(), $this->getPassword());
+
+            $request = $client->request($type, $url, $options);
+
 
             $response = json_decode($request->getBody()->getContents(),true);
             return $response;
         } catch (Exception $e) {
-            throw new Exception ($e->getMessage(), $e->getResponse()->getStatusCode());
+            print($e->getMessage()); exit;
         }
     }
 
@@ -143,7 +170,20 @@ class PrivyID
         }
     }
 
-    private function getMerchantKey() {
+    public function getOwner() {
+        $owner = (config('privyid.is_production')) ? config('privyid.production.owner') : config('privyid.sandbox.owner');
+
+        return [
+            'privyId' => $owner,
+            'enterpriseToken' => $this->getOwnerEnterpriseToken()
+        ];
+    }
+
+    private function getOwnerEnterpriseToken() {
+        return (config('privyid.is_production')) ? config('privyid.production.owner_enterprise_token') : config('privyid.sandbox.owner_enterprise_token');
+    }
+
+    public function getMerchantKey() {
         return (config('privyid.is_production')) ? config('privyid.production.merchant_key') : config('privyid.sandbox.merchant_key');
     }
 
@@ -280,25 +320,31 @@ class PrivyID
      * @param $documentTitle String Example Title	Document title
      * @param $docType String Serial	Document workflow. Value : Serial, Parallel
      * @param $owner String {"privyId":"AB1234", "enterpriseToken": "41bc84b42c8543daf448d893c255be1dbdcc722e"}	Document owner. Contains privyId and enterpriseToken, enterpriseToken on example column can be used for Development Environment. Every merchant has their own enterpriseToken and use them in Production Environment.
-     * @param $document File Exampledoc.pdf	Document with pdf format.
-     * @param $recipients Object[] [{"privyId":"TES001", "type":"Signer", "enterpriseToken": "companyToken"}, {"privyId":"TES002", "type":"Signer", "enterpriseToken": ""}]	Recipients list. Type can be : Signer, Reviewer. If the document type is Serial, the signing or reviewing process will be based on the order of recipients.
+     * @param $document string Exampledoc.pdf	Document with pdf format.
+     * @param $recipients string [{"privyId":"TES001", "type":"Signer", "enterpriseToken": "companyToken"}, {"privyId":"TES002", "type":"Signer", "enterpriseToken": ""}]	Recipients list. Type can be : Signer, Reviewer. If the document type is Serial, the signing or reviewing process will be based on the order of recipients.
      * @return mixed
      * @throws Exception
      *
      */
-    public function uploadDocument($documentTitle, $docType, $owner, $document, $recipients)
+    public function uploadDocument($documentTitle, $docType, $owner, $filepath, $recipients)
     {
         $endpoint = $this->baseUrl() . '/document/upload';
         $data = [
             'documentTitle' => $documentTitle,
             'docType' => $docType,
             'owner' => $owner,
-            'document' => $document,
             'recipients' => $recipients,
+            /**
+            'document' => [
+                'filename' => basename($filepath),
+                'content' => fopen($filepath,'rb'),
+                'mime' => \File::mimeType($filepath)
+            ]
+             */
+            'document' => fopen($filepath,'rb')
         ];
 
         $response = $this->clientRequest($endpoint, 'POST', $data);
-
         return $response;
     }
 

@@ -11,6 +11,8 @@ namespace BlackIT\PrivyID;
 
 trait PrivyIDAble
 {
+    use PrivyIDUploadable;
+
     public function privyids()
     {
         return $this->morphMany(PrivyIDAccount::class, 'privyable');
