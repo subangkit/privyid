@@ -9,6 +9,9 @@
 namespace BlackIT\PrivyID;
 
 
+use BlackIT\PrivyID\Exceptions\PrivyIDAlreadyBindedException;
+use mysql_xdevapi\Exception;
+
 trait PrivyIDAble
 {
     use PrivyIDUploadable;
@@ -66,8 +69,14 @@ trait PrivyIDAble
         return false;
     }
 
+    /**
+     * @param string $code
+     * @return mixed
+     * @throws \Exception
+     */
     public function bind(string $code)
     {
+
         $check = $this->privyid();
         if ($check != null)
             return $check;
@@ -85,10 +94,15 @@ trait PrivyIDAble
         $identityResponse = $privyID->getUserIdentity($account->token);
         if (isset($identityResponse['data'])) {
             $account->user_token = $identityResponse['data']['userToken'];
+            $account->privyId = $identityResponse['data']['privyId'];
+            $account->identity_response_json = json_encode($identityResponse);
+
+            $exist = PrivyIDAccount::where('privyId',$account->privyId)->first();
+            if ($exist) {
+                throw new \Exception($account->privyId.' already binded', 'PrivyIDAlreadyBinded');
+            } else {
+                return $this->privyids()->save($account);
+            }
         }
-
-        $account->identity_response_json = json_encode($identityResponse);
-
-        return $this->privyids()->save($account);
     }
 }

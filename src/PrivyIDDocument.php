@@ -24,6 +24,16 @@ class PrivyIDDocument extends Model
         'privy_uploadable_type',
         'document_response_json',
         'last_status_updated',
+        'execute_count',
+        'next_activity',
     ];
     protected $table = 'privyid_documents';
+
+    /**
+     * Get the owning privyiduploadable model.
+     */
+    public function privyiduploadable()
+    {
+        return $this->morphTo();
+    }
 }

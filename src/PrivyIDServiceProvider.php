@@ -9,6 +9,7 @@
 namespace BlackIT\PrivyID;
 
 
+use BlackIT\PrivyID\Commands\PrivyIDDocumentCheck;
 use Illuminate\Support\ServiceProvider;
 use BlackIT\PrivyID\Commands\PrivyIDCheckDocument;
 use BlackIT\PrivyID\Commands\PrivyIDCheckRegistration;
@@ -48,8 +49,7 @@ class PrivyIDServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                PrivyIDCheckRegistration::class,
-                PrivyIDCheckDocument::class
+                PrivyIDDocumentCheck::class
             ]);
         }
     }

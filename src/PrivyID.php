@@ -104,7 +104,7 @@ class PrivyID
             $response = json_decode($request->getBody()->getContents(),true);
             return $response;
         } catch (Exception $e) {
-            print($e->getMessage()); exit;
+            throw new Exception ($e->getMessage(), $e->getResponse()->getStatusCode());
         }
     }
 

@@ -12,10 +12,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class PrivyIDAccount extends Model
 {
-    protected $fillable = ['code','token','user_token','token_expired','code_expired', 'refresh_token', 'identity_response_json'];
+    protected $fillable = ['privyId','code','token','user_token','token_expired','code_expired', 'refresh_token', 'identity_response_json'];
     protected $table = 'privyids';
 
     public function privyable()
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * Get the owning privyidable model.
+     */
+    public function privyidable()
     {
         return $this->morphTo();
     }

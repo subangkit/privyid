@@ -13,23 +13,25 @@ class PrivyIDRecipientBuilder
 {
     protected $recipients = [];
 
-    public function addRecipient($privyID, $type) {
+    public function addRecipient($privyID, $type, $enterpriseToken = null) {
         if (array_key_exists($privyID,$this->recipients))
             return false;
 
         $this->recipients[$privyID] = [
-            'type' => $type
+            'type' => $type,
+            'enterpriseToken' => $enterpriseToken
         ];
 
         return true;
     }
 
-    public function changeRecipient($privyID,$type) {
+    public function changeRecipient($privyID,$type, $enterpriseToken = null) {
         if (!array_key_exists($privyID,$this->recipients))
             return false;
 
         $this->recipients[$privyID] = [
-            'type' => $type
+            'type' => $type,
+            'enterpriseToken' => $enterpriseToken
         ];
 
         $this->recipients = array_values($this->recipients);
@@ -54,7 +56,7 @@ class PrivyIDRecipientBuilder
             array_push($array, [
                 'privyId' => $recipientID,
                 'type' => $recipientData['type'],
-                'enterpriseToken' => null
+                'enterpriseToken' => $recipientData['enterpriseToken']
             ]);
         }
 

@@ -62,6 +62,11 @@ trait PrivyIDUploadable
                     $data = $statusResponse['data'];
                     $document->status_recipients = json_encode($data['recipients']);
                 }
+
+                $document->execute_count = 0;
+                $next = new \DateTime(date('Y-m-d H:i:s'));
+                $next = $next->modify('+2 minute');
+                $document->next_activity = $next->format('Y-m-d H:i:s');
                 $document->save();
 
                 return $document;

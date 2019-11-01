@@ -22,6 +22,7 @@ class PrivyidDocument extends Migration
             $table->text('recipients');
             $table->text('token');
             $table->string('url',255);
+            $table->string('document_status',30)->default('In Progress');;
 
             $table->text('document_response_json');
             $table->string('codification');
@@ -31,6 +32,8 @@ class PrivyidDocument extends Migration
 
             $table->unsignedInteger('privy_uploadable_id');
             $table->string('privy_uploadable_type');
+            $table->integer('execute_count')->default(0);
+            $table->dateTime('next_activity');
 
             $table->timestamps();
         });
