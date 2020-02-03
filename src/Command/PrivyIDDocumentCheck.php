@@ -57,11 +57,15 @@ class PrivyIDDocumentCheck extends Command
         if ($document == null)
             return null;
 
-        $object = $document->privyiduploadable();
+        $object = $document->privy_uploadable()->first();
 
-        $checkDocument = $object->statusDocument($document->token);
+        try {
+            $checkDocument = $object->statusDocument($document->token);
+        } catch (\Exception $e) {
+            \Log::info('Error Job Document Check '.date('Y-m-d H:i:s').' '.$e->getMessage());
+        }
 
-        if ($checkDocument) {
+        if ($checkDocument != null) {
             $recipientStatuses = json_decode($checkDocument->status_recipients,true);
 
             $statusDocument = true;

@@ -99,7 +99,7 @@ trait PrivyIDAble
 
             $exist = PrivyIDAccount::where('privyId',$account->privyId)->first();
             if ($exist) {
-                throw new \Exception($account->privyId.' already binded', 'PrivyIDAlreadyBinded');
+                throw new \Exception($account->privyId.' already binded');
             } else {
                 return $this->privyids()->save($account);
             }

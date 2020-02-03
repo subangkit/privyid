@@ -36,7 +36,7 @@ class PrivyIDDocument extends Model
     {
         return $this->morphTo();
     }
-    
+
     public function privy_uploadable()
     {
         return $this->morphTo();

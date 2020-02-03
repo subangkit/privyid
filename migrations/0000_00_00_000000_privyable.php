@@ -21,7 +21,7 @@ class Privyable extends Migration
             $table->text('refresh_token');
             $table->text('user_token');
             $table->text('identity_response_json');
-            $table->datetime('code_expired');
+            $table->datetime('code_expired')->nullable();
             $table->datetime('token_expired');
 
             $table->unsignedInteger('privyable_id');
